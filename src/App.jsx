@@ -5,7 +5,7 @@ import { PointerLockControls, Sky } from "@react-three/drei"
 import { Ground } from "../components/Ground.jsx"
 import { Physics } from "@react-three/rapier"
 import { Player } from "../components/Player.jsx"
-import { Cubes } from "../components/Cube.jsx"
+// import { Cubes } from "../components/Cube.jsx"
 import { Enemies } from "../components/Enemies.jsx"
 // zustand: // needed for state management, especially when different components need to access the same data.
 import { create } from "zustand" 
@@ -21,6 +21,9 @@ export const usePointerLockControlsStore = create(() => ({
 
 export default function App() {
   const scene = new THREE.Scene();
+
+  // raycaster uses the Vectors to get the trajectory of the bullet.
+  // creates a new instance.
   // update the state of all active tweens in every frame.
   useFrame(() => {
     TWEEN.update();
@@ -37,6 +40,35 @@ export default function App() {
     usePointerLockControlsStore.setState({ isLock: false });
     // console.log("unlock!")
   }
+  // function shoot
+  function shoot(scene, startPosition, startDirection) {
+    const geometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const bulletMesh = new THREE.Mesh(geometry, material);
+    scene.add(bulletMesh);
+
+    // Set initial position and direction
+    let position = new THREE.Vector3().copy(startPosition);
+    let velocity = new THREE.Vector3().copy(startDirection).normalize().multiplyScalar(0.1);
+
+    // Update the bullet's position each frame
+    function update() {
+        // Move the bullet
+        position.add(velocity);
+
+        // Update Three.js mesh position
+        bulletMesh.position.copy(position);
+
+        // Remove the bullet if it goes out of bounds
+        // if (position.y < -10) {
+        //     scene.remove(bulletMesh);
+        // }
+    }
+
+    return update;
+  }
+
+shoot(scene, [0,5,0], [0,0,3]);
 
 
   return (
@@ -65,16 +97,10 @@ export default function App() {
 
         <Enemies camera={<PointerLockControls/>} scene={scene}/> 
 
-        {/* <Cubes/> */}
-
         <Ground />
 
      </Physics>
-    
-    {/* <group position={[3, 1, -2]}>
-      <Blaster />
-    </group> */}
-
+  
      </>
   )
 }

@@ -3,23 +3,24 @@ import { RigidBody } from "@react-three/rapier"
 import spawnSpots from "../src/spawnSpots.json"
 import { useState, useEffect, useRef } from 'react'
 import { useFrame } from "@react-three/fiber"
+import { Player } from "../components/Player"
 
-
-export function Enemies() {
-  
+export function Enemies({ playerPosition }) {
   const [enemies, setEnemies] = useState([]);
   const SPAWN_TIME = 5000;
   let enemyId = 0;
+  
+  console.log(playerPosition);
 
 useEffect(() => {
   function spawnEnemy () {
     const idSpawnEnemies = setInterval(() => {
     // spawn enemies in random positions.
     const newEnemyPosition = spawnSpots[getRandomInt(0, spawnSpots.length - 1)];
-
+    
 // spawning enemies, setting the hooks.
     setEnemies(prevEnemies => [...prevEnemies,
-          <Enemy key={enemyId} position={newEnemyPosition} />
+          <Enemy key={enemyId} position={newEnemyPosition} playerPosition={ playerPosition}/>
     ]);
     enemyId++;
     console.log("spawned in " + newEnemyPosition + " with ID: " + enemyId);
@@ -40,22 +41,28 @@ useEffect(() => {
   );
 }
 
+// get random function 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // SINGLE ENEMY ---------------------------------------------------------
 function Enemy(props) {
-  const direction = new THREE.Vector3();
-  const frontVector = new THREE.Vector3();
-  const sideVector = new THREE.Vector3();
-  const rotation = new THREE.Vector3();
+    const playerPositionRef = useRef(props.playerPosition); // Create a mutable reference
+    const direction = new THREE.Vector3();
+    const frontVector = new THREE.Vector3();
+    const sideVector = new THREE.Vector3();
+    const rotation = new THREE.Vector3();
     const ENEMY_SPEED = 5;
     const enemyRef = useRef();
     const currentEnemyPosition = new THREE.Vector3(0, 0, 0);
     const enemyMesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ color: "red" }));
     const targetPoint = new THREE.Vector3(100, 0, 0);
 
+    // // Update the mutable reference whenever props.playerPosition changes.
+    useEffect(() => {
+        playerPositionRef.current = props.playerPosition;
+    }, [playerPositionRef]);
 
 
   // move enemy function.
@@ -79,10 +86,12 @@ function Enemy(props) {
         enemyRef.current.wakeUp();
 
         enemyRef.current.setLinvel({x: direction.x, y:velocityEnemy.y, z:direction.z});
+        console.log(props);
+        
+       
   }
 
   useEffect(() => {
-    console.log(moveEnemy);
     const animationId = requestAnimationFrame(moveEnemy);
 
     return () => cancelAnimationFrame(animationId);
@@ -96,7 +105,7 @@ function Enemy(props) {
 return (
     <>  
     <RigidBody ref={enemyRef}>
-        <primitive object={enemyMesh} position={props.position} />      
+        <primitive object={enemyMesh} position={props.position} playerPosition={playerPositionRef}/>      
     </RigidBody>
     </>
 );

@@ -7,7 +7,7 @@ import { useRef, useState, useEffect } from "react"
 import { usePersonControls } from "../src/hooks.js"
 import { useFrame } from "@react-three/fiber"
 import { useAimingStore, Weapon } from "./Blaster.jsx"
-
+import { Enemies } from "./Enemies.jsx"
 
 const MOVE_SPEED = 10;
 const direction = new THREE.Vector3();
@@ -19,7 +19,8 @@ const easing = TWEEN.Easing.Quadratic.Out;
 export function Player() {
     // create a link for the player object. This will allow direct interaction with the player object in the scene.
     const playerRef = useRef();
-
+    // player position to pass to the enemies.
+    const [playerPosition, setPlayerPosition] = useState();
     // destructures the controls on hooks.js, indicating which keys are currently pressed.
     const {forward, backward, left, right, jump} = usePersonControls();
 
@@ -28,7 +29,8 @@ export function Player() {
 
     //
     const swayingObjectRef = useRef();
-
+    
+    // console.log(playerPosition);
     // setting up animation states.
     // RUNNING
     const [swayingAnimation, setSwayingAnimation] = useState(null);
@@ -53,6 +55,7 @@ export function Player() {
     useFrame((state) => {
         // checks if the player exists. If not, will stop the function execution to avoid errors. 
         if(!playerRef.current) return;
+        
 
         // get the current linear player velocity, to move the player.
         const velocity = playerRef.current.linvel();
@@ -73,8 +76,10 @@ export function Player() {
 
         // set the player's new linear velocity based on the calculated direction of movement and keep the current vertical velocity (so as not to affect jumps or falls).
         playerRef.current.setLinvel({ x: direction.x, y:velocity.y, z: direction.z});
-
-        // JUMPING
+        setPlayerPosition(playerRef.current.translation());
+      
+        
+    // JUMPING
         
         // acessing Rapier physics engine scene. Contains all physical objects and manages their interactions.
         const world = rapier.world;
@@ -222,7 +227,7 @@ export function Player() {
             if(isAiming) {
                 swayingAnimation.stop();
                 aimingAnimation.start();
-                console.log(isAiming);
+                // console.log(isAiming);
             } else if (isAiming === false) {
                 // ? is used to make sure that aimingBackAnimation is not null or undefined.
                 // HERE IS THE BUG, IF I WAIT FOR THE ANIMATION BACK COMPLETE IT BUGS THE WHOLE ANIMATION.
@@ -239,7 +244,7 @@ export function Player() {
 
     return (
         <>
-        <RigidBody colliders={false} mass={1} ref={playerRef} lockRotations>
+        <RigidBody colliders={false} mass={1} ref={playerRef} playerPosition={playerPosition} lockRotations>
             <mesh castShadow>
                 {/* args={[ radius, height]} */}
                 <capsuleGeometry args={[0.5, 0.5]} />
@@ -251,6 +256,7 @@ export function Player() {
                 <Weapon position={[0.3, -0.1, 0.3]} scale={0.3}/>
             </group>
         </group>
+        <Enemies playerPosition={playerPosition} />
         </>
     );
 }
