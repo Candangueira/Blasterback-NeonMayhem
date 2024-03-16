@@ -1,0 +1,8 @@
+Model Information:
+* title:	Assault Rifle
+* source:	https://sketchfab.com/3d-models/assault-rifle-13a873fe47fd4b8a83906521c83a2840
+* author:	Wacky (https://sketchfab.com/wackyblocks)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

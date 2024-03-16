@@ -1,0 +1,11 @@
+Model Information:
+* title:	Low-poly AKS-74U
+* source:	https://sketchfab.com/3d-models/low-poly-aks-74u-4aa2f92e016c434eafdba67b238bb7fb
+* author:	veightyfive (https://sketchfab.com/veightyfive)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Low-poly AKS-74U" (https://sketchfab.com/3d-models/low-poly-aks-74u-4aa2f92e016c434eafdba67b238bb7fb) by veightyfive (https://sketchfab.com/veightyfive) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
