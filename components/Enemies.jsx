@@ -3,10 +3,12 @@ import { RigidBody } from "@react-three/rapier"
 import spawnSpots from "../src/spawnSpots.json"
 import { useState, useEffect, useRef } from 'react'
 import { useFrame } from "@react-three/fiber"
-import { Player } from "../components/Player"
+
 
 export function Enemies({ playerPosition }) {
+
   const [enemies, setEnemies] = useState([]);
+  const [enemyHealth, setEnemyHealth] = useState(100);
   const SPAWN_TIME = 5000;
   let enemyId = 0;
   
@@ -59,14 +61,9 @@ function Enemy(props) {
     const enemyMesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ color: "red" }));
     const targetPoint = new THREE.Vector3(100, 0, 0);
 
-    // // Update the mutable reference whenever props.playerPosition changes.
-    useEffect(() => {
-        playerPositionRef.current = props.playerPosition;
-    }, [playerPositionRef]);
 
-
-  // move enemy function.
-  function moveEnemy() {
+// move enemy function.
+function moveEnemy() {
     // Calculate direction to target
         const direction = targetPoint.clone().sub(enemyMesh.position).normalize(); 
 
@@ -90,6 +87,17 @@ function Enemy(props) {
         
        
   }
+//STILL WORKING ON IT.
+  function bulletDamage() {
+    // if(enemyMesh.intersectObjects(enemyMesh)) {
+    //   console.log("collision");
+    //   }
+    }
+  // // Update the mutable reference whenever props.playerPosition changes.
+   useEffect(() => {
+        playerPositionRef.current = props.playerPosition;
+    }, [playerPositionRef]);
+
 
   useEffect(() => {
     const animationId = requestAnimationFrame(moveEnemy);
@@ -99,6 +107,7 @@ function Enemy(props) {
 
   useFrame(() => {
     moveEnemy();
+    bulletDamage();
   });
 // -----------------------------------------------------------
 

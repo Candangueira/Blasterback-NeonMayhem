@@ -244,7 +244,7 @@ export function Player() {
 
     return (
         <>
-        <RigidBody colliders={false} mass={1} ref={playerRef} playerPosition={playerPosition} lockRotations>
+        <RigidBody colliders={false} mass={1} ref={playerRef} lockRotations>
             <mesh castShadow>
                 {/* args={[ radius, height]} */}
                 <capsuleGeometry args={[0.5, 0.5]} />
@@ -256,7 +256,7 @@ export function Player() {
                 <Weapon position={[0.3, -0.1, 0.3]} scale={0.3}/>
             </group>
         </group>
-        <Enemies playerPosition={playerPosition} />
+        <Enemies playerPosition={playerPosition}/>
         </>
     );
 }
