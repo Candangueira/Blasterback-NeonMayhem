@@ -8,6 +8,8 @@ import { usePersonControls } from "../src/hooks.js"
 import { useFrame } from "@react-three/fiber"
 import { useAimingStore, Weapon } from "./Blaster.jsx"
 import { Enemies } from "./Enemies.jsx"
+import { create } from "zustand"
+import { Cubes } from "../components/Cube.jsx"
 
 const MOVE_SPEED = 10;
 const direction = new THREE.Vector3();
@@ -16,9 +18,27 @@ const sideVector = new THREE.Vector3();
 const rotation = new THREE.Vector3();
 const easing = TWEEN.Easing.Quadratic.Out;
 
+export const usePlayerPositionStore = create((set) => ({
+    playerTargetPosition: {x:0, y:0, z:0},
+    setIsPlayerTargetPosition: (value) => set(() => ({ playerTargetPosition: value }))
+}));
+
 export function Player() {
+
+    // TEST 
+    const geometry = new THREE.BoxGeometry();
+    // Create a material (e.g., a basic white material)
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    // Combine the geometry with the material to create a mesh
+    const cube = new THREE.Mesh(geometry, material);
+
+
     // create a link for the player object. This will allow direct interaction with the player object in the scene.
     const playerRef = useRef();
+
+    // create a link for the cube object. This will allow direct interaction with the cube object in the scene.
+    const cubeRigidBodyRef = useRef();
+
     // player position to pass to the enemies.
     const [playerPosition, setPlayerPosition] = useState();
     // destructures the controls on hooks.js, indicating which keys are currently pressed.
@@ -26,28 +46,38 @@ export function Player() {
 
     // create a link for the weapon and the player object.
     const objectHandRef = useRef();
+    //
+    const setIsPlayerTargetPosition = usePlayerPositionStore((state) => state.setIsPlayerTargetPosition);
 
+    // console.log(setIsPlayerTargetPosition);
     //
     const swayingObjectRef = useRef();
     
-    // console.log(playerPosition);
-    // setting up animation states.
-    // RUNNING
+// console.log(playerPosition);
+// setting up animation states.
+// RUNNING
     const [swayingAnimation, setSwayingAnimation] = useState(null);
     const [swayingBackAnimation, setSwayingBackAnimation] = useState(null);
     const [isSwayingAnimationFinished, setIsSwayingAnimationFinished] = useState(true);
 
-    // IDLE
+// IDLE
     const [idle, setIdle] = useState(new THREE.Vector3(-0.005, 0.005, 0));
     const [idleDuration, setIdleDuration] = useState(1000);
     const [isMoving, setIsMoving] = useState(false);
 
-    // AIMING
+// AIMING
     // Adding the aimingAnimation and aimingBackAnimation states.
     const [aimingAnimation, setAimingAnimation ] = useState(null);
     const [aimingBackAnimation, setAimingBackAnimation ] = useState(null);
     const isAiming = useAimingStore((state) => state.isAiming);
 
+  
+// Create a raycaster instance
+    const raycaster = new THREE.Raycaster();
+
+    // Create a vector to represent the direction of the ray
+    const rayDirection = new THREE.Vector3();
+    
     // provides access to rapier.
     const rapier = useRapier();
 
@@ -76,13 +106,45 @@ export function Player() {
 
         // set the player's new linear velocity based on the calculated direction of movement and keep the current vertical velocity (so as not to affect jumps or falls).
         playerRef.current.setLinvel({ x: direction.x, y:velocity.y, z: direction.z});
+        // updates the state of the player movement.
         setPlayerPosition(playerRef.current.translation());
+        // gets the target position reference to use in enemies( so they can follow it.)
+        setIsPlayerTargetPosition(playerRef.current.translation());
+    
+    // SHOOTING WITH RAYCASTING
+
+        // acessing Rapier physics engine scene. Contains all physical objects and manages their interactions.
+        const world = rapier.world;
+
+        const shootingRay = world.castRay(new RAPIER.Ray(playerRef.current.translation(), state.camera.quaternion));
+
+        // console.log(shootingRay);
+
+        const bulletHit = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 5;
+        console.log(bulletHit);
+        // Get the direction vector for the ray based on the camera's rotation
+        // rayDirection.set(0, 0, -1).applyQuaternion(state.camera.quaternion);
+
+        // // Set the raycaster's origin and direction
+        // raycaster.set(state.camera.position, rayDirection);
+
+        // // Perform the raycasting
+        // const intersects = raycaster.intersectObject(cubeRigidBodyRef.current);
+
+        // // Check if the ray intersects with any objects
+        // if (intersects.length > 0) {
+        //     // Access the first intersection point
+        //     const intersectionPoint = intersects[0].point;
+
+        //     // Use the intersection point for further processing
+        //     console.log('Intersection point:', intersectionPoint);
+        // }
+
       
         
     // JUMPING
         
-        // acessing Rapier physics engine scene. Contains all physical objects and manages their interactions.
-        const world = rapier.world;
+        
 
         // the raycasting creates a ray in the y axis and checks if the ray is intersecting any object in the scene. Used to detect collision in the next line. 
         const ray = world.castRay(new RAPIER.Ray(playerRef.current.translation(), {x:0, y:-1, z:0}));
@@ -256,7 +318,16 @@ export function Player() {
                 <Weapon position={[0.3, -0.1, 0.3]} scale={0.3}/>
             </group>
         </group>
-        <Enemies playerPosition={playerPosition}/>
+
+        
+            <RigidBody colliders={false} mass={1} ref={cubeRigidBodyRef}>
+                <mesh>
+                    <capsuleGeometry args={[5, 5]} />
+                    <CapsuleCollider args={[5, 5]} />
+                </mesh>
+            </RigidBody>
+        
+        
         </>
     );
 }

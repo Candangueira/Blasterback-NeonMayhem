@@ -21,7 +21,6 @@ export const useAimingStore = create((set) => ({
 }));
 
 
-
 export function Weapon(props) {
     const muzzleTexture = useLoader(THREE.TextureLoader, MuzzleFlash);
 
@@ -125,7 +124,7 @@ export function Weapon(props) {
             });
 
         setFlashAnimation(twFlashAnimation);
-        console.log(twFlashAnimation);
+        
     }
 
 // -----------------------------------------------------------------------------------------------
@@ -140,7 +139,7 @@ export function Weapon(props) {
                 break;
             case AIM_BUTTON:
                 setIsAiming(state);
-                // console.log("aim")
+                // console.log(setIsAiming);
                 break;
         }
     }

@@ -32,44 +32,14 @@ export default function App() {
   // function to toggle the state of the pointer lock to true.
   function pointerLockControlsLockHandler() {
     usePointerLockControlsStore.setState({ isLock: true });
-    // console.log("lock!")
+  
   }
 
   // function to toggle the state of the pointer lock to false.
   function pointerLockControlsUnlockHandler() {
     usePointerLockControlsStore.setState({ isLock: false });
-    // console.log("unlock!")
+   
   }
-//   // function shoot
-//   function shoot(scene, startPosition, startDirection) {
-//     const geometry = new THREE.SphereGeometry(0.1, 8, 8);
-//     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-//     const bulletMesh = new THREE.Mesh(geometry, material);
-//     scene.add(bulletMesh);
-
-//     // Set initial position and direction
-//     let position = new THREE.Vector3().copy(startPosition);
-//     let velocity = new THREE.Vector3().copy(startDirection).normalize().multiplyScalar(0.1);
-
-//     // Update the bullet's position each frame
-//     function update() {
-//         // Move the bullet
-//         position.add(velocity);
-
-//         // Update Three.js mesh position
-//         bulletMesh.position.copy(position);
-
-//         // Remove the bullet if it goes out of bounds
-//         // if (position.y < -10) {
-//         //     scene.remove(bulletMesh);
-//         // }
-//     }
-
-//     return update;
-//   }
-
-// shoot(scene, [0,5,0], [0,0,3]);
-
 
   return (
     <>
@@ -92,8 +62,8 @@ export default function App() {
      
      {/* setup for physics */}
      <Physics gravity={[0, -20, 0]}>
-
-        <Player />
+        
+        <Player/>
 
         <Enemies camera={<PointerLockControls/>} scene={scene}/> 
 
