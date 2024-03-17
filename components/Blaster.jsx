@@ -128,7 +128,7 @@ export function Weapon(props) {
     }
 
 // -----------------------------------------------------------------------------------------------
-// Shoot / Aim handler function.
+//  Aim handler function.
     function mouseButtonHandler(button, state) {
         // if isLock is falsy execute.
         if(!usePointerLockControlsStore.getState().isLock) return;

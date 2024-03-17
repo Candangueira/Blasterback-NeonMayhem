@@ -11,7 +11,10 @@ import { Enemies } from "./Enemies.jsx"
 import { create } from "zustand"
 import { Cubes } from "../components/Cube.jsx"
 
+const raycaster = new THREE.Raycaster();
 const MOVE_SPEED = 10;
+// const SHOOT_BUTTON = parseInt(import.meta.env.VITE_SHOOT_BUTTON);
+// const AIM_BUTTON = parseInt(import.meta.env.VITE_AIM_BUTTON);
 const direction = new THREE.Vector3();
 const frontVector = new THREE.Vector3();
 const sideVector = new THREE.Vector3();
@@ -24,14 +27,6 @@ export const usePlayerPositionStore = create((set) => ({
 }));
 
 export function Player() {
-
-    // TEST 
-    const geometry = new THREE.BoxGeometry();
-    // Create a material (e.g., a basic white material)
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    // Combine the geometry with the material to create a mesh
-    const cube = new THREE.Mesh(geometry, material);
-
 
     // create a link for the player object. This will allow direct interaction with the player object in the scene.
     const playerRef = useRef();
@@ -71,16 +66,13 @@ export function Player() {
     const [aimingBackAnimation, setAimingBackAnimation ] = useState(null);
     const isAiming = useAimingStore((state) => state.isAiming);
 
+//  BULLET
+const [bulletHit, setBulletHit] = useState(false);
+const [shootingRay, setShootingRay] = useState(false);
   
-// Create a raycaster instance
-    const raycaster = new THREE.Raycaster();
-
-    // Create a vector to represent the direction of the ray
-    const rayDirection = new THREE.Vector3();
-    
     // provides access to rapier.
     const rapier = useRapier();
-
+    const world = rapier.world;
     // is called each frame, here the player position and linear velocity are updated.
     useFrame((state) => {
         // checks if the player exists. If not, will stop the function execution to avoid errors. 
@@ -112,40 +104,18 @@ export function Player() {
         setIsPlayerTargetPosition(playerRef.current.translation());
     
     // SHOOTING WITH RAYCASTING
-
-        // acessing Rapier physics engine scene. Contains all physical objects and manages their interactions.
-        const world = rapier.world;
-
-        const shootingRay = world.castRay(new RAPIER.Ray(playerRef.current.translation(), state.camera.quaternion));
-
-        // console.log(shootingRay);
-
-        const bulletHit = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 5;
-        console.log(bulletHit);
-        // Get the direction vector for the ray based on the camera's rotation
-        // rayDirection.set(0, 0, -1).applyQuaternion(state.camera.quaternion);
-
-        // // Set the raycaster's origin and direction
-        // raycaster.set(state.camera.position, rayDirection);
-
-        // // Perform the raycasting
-        // const intersects = raycaster.intersectObject(cubeRigidBodyRef.current);
-
-        // // Check if the ray intersects with any objects
-        // if (intersects.length > 0) {
-        //     // Access the first intersection point
-        //     const intersectionPoint = intersects[0].point;
-
-        //     // Use the intersection point for further processing
-        //     console.log('Intersection point:', intersectionPoint);
-        // }
-
-      
+     
+        raycaster.set(playerRef.current.translation(), state.camera.rotation);
+        console.log(raycaster);
+        // setShootingRay(world.castRay(new RAPIER.Ray(playerRef.current.translation(), state.camera.quaternion)));
         
+        // const test = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 1.5;
+        // if(shootingRay){
+        //     console.log(shootingRay);
+        // } else {console.log(false);}
+
     // JUMPING
         
-        
-
         // the raycasting creates a ray in the y axis and checks if the ray is intersecting any object in the scene. Used to detect collision in the next line. 
         const ray = world.castRay(new RAPIER.Ray(playerRef.current.translation(), {x:0, y:-1, z:0}));
 
@@ -175,12 +145,18 @@ export function Player() {
         TWEEN.update();
     });
 
+// Shoot function.
+        function shootButtonHandler() {
+            // make the function check if the shootingRay is true or false.
+            // and which object is being hit by the ray.
+        }
+
 // sets jump function.
         function doJump() {
         playerRef.current.setLinvel({x: 0, y: 10, z: 0});
         }
 
-// idle animation / running animation
+// idle animation / running animation ----------------------------------------------------
 
         function setSwayingAnimationParams() {
             // assures that the running animation is falsy.
@@ -205,7 +181,7 @@ export function Player() {
 
         } 
 
-// Aiming Animation function.
+// Aiming Animation function. ------------------------------------------------------------
 
         function initAimingAnimation() {
             const currentPosition = swayingObjectRef.current.position;
@@ -265,6 +241,7 @@ export function Player() {
             setSwayingBackAnimation(twSwayingBackAnimation);
             
         }
+
 // ------------------------------------------------------------------------------------
    
 
@@ -301,6 +278,22 @@ export function Player() {
 
             }
         }, [ isAiming, aimingAnimation, aimingBackAnimation ]);
+
+         useEffect(() => {
+        // bullet shooting
+        document.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            shootButtonHandler(shootingRay);
+            // console.log(shootingRay)
+        });
+
+        document.addEventListener("mouseup", (e) => {
+            e.preventDefault();
+            shootButtonHandler();
+            // console.log("stop!")
+        });
+
+    });
    
 // ------------------------------------------------------------------------------------
 
