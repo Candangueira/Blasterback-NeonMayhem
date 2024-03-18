@@ -123,7 +123,7 @@ function Enemy(props) {
     return (
         <>
             <RigidBody ref={enemyRef}>
-                <primitive object={enemyMesh} position={props.position} />
+                <primitive object={enemyMesh} />
             </RigidBody>
         </>
     );
