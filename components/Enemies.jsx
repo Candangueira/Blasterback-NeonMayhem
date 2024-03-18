@@ -4,6 +4,7 @@ import spawnSpots from "../src/spawnSpots.json"
 import { useState, useEffect, useRef } from 'react'
 import { useFrame } from "@react-three/fiber"
 import { usePlayerPositionStore } from "./Player"
+import { update } from "@tweenjs/tween.js"
 
 export function Enemies() {
 
@@ -11,27 +12,35 @@ export function Enemies() {
   const [enemyHealth, setEnemyHealth] = useState(100);
   const SPAWN_TIME = 5000;
   let enemyId = 0; 
+  let enemyArray = [];
 
 useEffect(() => {
-    function spawnEnemy () {
-    const idSpawnEnemies = setInterval(() => {
-    // spawn enemies in random positions.
-    const newEnemyPosition = spawnSpots[getRandomInt(0, spawnSpots.length - 1)];
+  
+  // adds enemy to the array.
+    function addEnemyToArray(newEnemy) {
+      setEnemies(prevEnemies => {
+    enemyArray = [...prevEnemies, newEnemy];
+    console.log(enemyArray); // Log the updated state immediately after setting it
+    return enemyArray; 
+  });
+}
+
+  function spawnEnemy () {
+  const idSpawnEnemies = setInterval(() => {
+  // spawn enemies in random positions.
+  const newEnemyPosition = spawnSpots[getRandomInt(0, spawnSpots.length - 1)];
     
 // spawning enemies, setting the hooks.
 // set enemies takes the previous state of the enemies and add new ones.
-    setEnemies(prevEnemies => [...prevEnemies,
-          <Enemy key={enemyId} position={newEnemyPosition} />
-    ]);
+    addEnemyToArray(<Enemy key={enemyId} position={newEnemyPosition} />);
     enemyId++;
     console.log("spawned in " + newEnemyPosition + " with ID: " + enemyId);
     }, SPAWN_TIME);
-
     return () => clearInterval(idSpawnEnemies);
   };
 
   const setIntervalId = setTimeout(spawnEnemy, SPAWN_TIME); // Initial call to spawnEnemy
-
+  
   return () => clearInterval(setIntervalId); //  ensures that any pending intervals are canceled when the component is unmounted.
 }, []);
 
@@ -49,7 +58,8 @@ function getRandomInt(min, max) {
 
 // SINGLE ENEMY ---------------------------------------------------------
 function Enemy(props) {
-    const playerPosition = usePlayerPositionStore((state) => state.playerPosition);
+  // use the player position store to get the player position.
+    const playerTargetPosition = usePlayerPositionStore((state) => state.playerTargetPosition);
 
     const direction = new THREE.Vector3();
     const frontVector = new THREE.Vector3();
@@ -59,25 +69,28 @@ function Enemy(props) {
     const enemyRef = useRef();
     const currentEnemyPosition = new THREE.Vector3(0, 0, 0);
     const enemyMesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({ color: "red" }));
-    const targetPoint = new THREE.Vector3(100, 0, 0);
+    const targetPoint = new THREE.Vector3(playerTargetPosition.x, playerTargetPosition.y, playerTargetPosition.z);
 
 
 // move enemy function.
 function moveEnemy() {
-     
+    // console.log(playerTargetPosition);
     // !! CHECK HERE IF THE PLAYER POSITION IS BEING UPDATED. !!
     // console.log(playerPosition);
 
     // Calculate direction to target
         const direction = targetPoint.clone().sub(enemyMesh.position).normalize(); 
+        console.log(targetPoint);
 
        // get the current linear enemy velocity, to move the enemy.
         const velocityEnemy = enemyRef.current.linvel();
 
+       // Calculate the velocity vector based on the direction and enemy speed
+        const velocity = direction.clone().multiplyScalar(ENEMY_SPEED);
+
         // set the forward/backward motion vector based on the pressed buttons.
         frontVector.set(0, 0, 10);
-        
-
+      
         // set the left/right motion vector based on the pressed buttons.
         sideVector.set(10, 0, 0);
 
@@ -86,7 +99,7 @@ function moveEnemy() {
 
         enemyRef.current.wakeUp();
 
-        enemyRef.current.setLinvel({x: direction.x, y:velocityEnemy.y, z:direction.z});       
+        enemyRef.current.setLinvel({x: velocity.x, y:velocityEnemy.y, z:velocity.z});       
        
   }
 //STILL WORKING ON IT.

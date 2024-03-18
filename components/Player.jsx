@@ -28,7 +28,10 @@ export const usePlayerPositionStore = create((set) => ({
 }));
 
 export function Player() {
-
+// !!!!!!!!!!!! DELETE THIS !!!!!!!!!!!!!!!!!
+    // const playerTargetPosition = usePlayerPositionStore((state) => state.playerTargetPosition);
+    // console.log(playerTargetPosition);
+// ------------------------------------------------
     // create a link for the player object. This will allow direct interaction with the player object in the scene.
     const playerRef = useRef();
 
