@@ -19,6 +19,7 @@ const direction = new THREE.Vector3();
 const frontVector = new THREE.Vector3();
 const sideVector = new THREE.Vector3();
 const rotation = new THREE.Vector3();
+const cameraDirection = new THREE.Vector3();
 const easing = TWEEN.Easing.Quadratic.Out;
 
 export const usePlayerPositionStore = create((set) => ({
@@ -104,15 +105,20 @@ const [shootingRay, setShootingRay] = useState(false);
         setIsPlayerTargetPosition(playerRef.current.translation());
     
     // SHOOTING WITH RAYCASTING
-     
-        raycaster.set(playerRef.current.translation(), state.camera.rotation);
-        console.log(raycaster);
-        // setShootingRay(world.castRay(new RAPIER.Ray(playerRef.current.translation(), state.camera.quaternion)));
+        // Get the direction the camera is facing
+        cameraDirection.applyEuler(state.camera.rotation);
+        state.camera.getWorldDirection(cameraDirection);
+        // Set the raycaster to start at the player's position and shoot in the direction the camera is facing
+        raycaster.set(playerRef.current.translation(), cameraDirection);
+
+        // Get the first object the raycaster hits
+        setShootingRay(world.castRay(new RAPIER.Ray(playerRef.current.translation(), cameraDirection)));
         
-        // const test = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 1.5;
-        // if(shootingRay){
-        //     console.log(shootingRay);
-        // } else {console.log(false);}
+        // checks if shootingRay exists, if it's colliding with any object in the scene and if the value of "exposure time" of the ray is equal or lesser than the given value then the variable is set to TRUE.
+        const test = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 100;
+        if(test){
+            console.log(test);
+        } else {console.log(false);}
 
     // JUMPING
         
@@ -314,7 +320,7 @@ const [shootingRay, setShootingRay] = useState(false);
 
         
             <RigidBody colliders={false} mass={1} ref={cubeRigidBodyRef}>
-                <mesh>
+                <mesh position={[10, 1, 0]}>
                     <capsuleGeometry args={[5, 5]} />
                     <CapsuleCollider args={[5, 5]} />
                 </mesh>
