@@ -8,7 +8,6 @@ import { usePlayerPositionStore } from './Player';
 
 export function Enemies() {
     const [enemies, setEnemies] = useState([]);
-    const [enemyDirection, setEnemyDirection] = useState();
     const [enemyHealth, setEnemyHealth] = useState(100);
     const SPAWN_TIME = 5000;
     let enemyId = 0;
@@ -19,26 +18,23 @@ export function Enemies() {
         function addEnemyToArray(newEnemy) {
             setEnemies((prevEnemies) => {
                 enemyArray = [...prevEnemies, newEnemy];
-                console.log(enemyArray); // Log the updated state immediately after setting it
+                // console.log(enemyArray); // Log the updated state immediately after setting it
                 return enemyArray;
             });
         }
 
         function spawnEnemy() {
             const idSpawnEnemies = setInterval(() => {
-                // spawn enemies in random positions.
-                const newEnemyPosition =
+            const newEnemyPosition =
                     spawnSpots[getRandomInt(0, spawnSpots.length - 1)];
-
+                console.log(newEnemyPosition);
                 // spawning enemies, setting the hooks.
                 // set enemies takes the previous state of the enemies and add new ones.
+                
                 addEnemyToArray(
-                    <Enemy key={enemyId} position={newEnemyPosition} />
+                    <Enemy key={enemyId} enemyPosition={newEnemyPosition}/>
                 );
                 enemyId++;
-                console.log(
-                    'spawned in ' + newEnemyPosition + ' with ID: ' + enemyId
-                );
             }, 5000);
             return () => clearInterval(idSpawnEnemies);
         }
@@ -80,7 +76,7 @@ function Enemy(props) {
         // Calculate direction to target
         const direction = targetPoint
             .clone()
-            .sub(enemyRef.current.translation()) // is this right?
+            .sub(enemyRef.current.translation()) // get the enemy position
             .normalize();
         // console.log(targetPoint);
 
@@ -120,11 +116,14 @@ function Enemy(props) {
     });
     // -----------------------------------------------------------
 
+
     return (
         <>
+        <group position={props.enemyPosition}>
             <RigidBody ref={enemyRef}>
                 <primitive object={enemyMesh} />
             </RigidBody>
+        </group>
         </>
     );
 }
