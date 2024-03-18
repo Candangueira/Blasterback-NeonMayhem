@@ -12,20 +12,22 @@ export function Ground() {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
     return (
-        <RigidBody type="fixed" colliders={false}>
-            <mesh receiveShadow position={[0, 0, 0]} rotation-x={-Math.PI / 2}>
+        <group className="floor">
+            <RigidBody type="fixed" colliders={false}>
+                <mesh receiveShadow position={[0, 0, 0]} rotation-x={-Math.PI / 2}>
 
-                {/* defines the size of the 3D plane */}
-                <planeGeometry args={[500, 500]} />
+                    {/* defines the size of the 3D plane */}
+                    <planeGeometry args={[500, 500]} />
 
-                {/* defines the material of the 3D plane */}
-                <meshStandardMaterial color="white" />
+                    {/* defines the material of the 3D plane */}
+                    <meshStandardMaterial color="white" />
 
-                {/* applies texture in the mesh */}
-                <meshStandardMaterial map={texture} map-repeat={[25, 25]} />
+                    {/* applies texture in the mesh */}
+                    <meshStandardMaterial map={texture} map-repeat={[25, 25]} />
 
-            </mesh>
-            <CuboidCollider args={[500, 2, 500]} position={[0, -2, 0]} />
-        </RigidBody>
+                </mesh>
+                <CuboidCollider args={[500, 2, 500]} position={[0, -2, 0]} />
+            </RigidBody>
+        </group>
     )
 }

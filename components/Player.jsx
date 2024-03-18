@@ -119,9 +119,21 @@ const [shootingRay, setShootingRay] = useState(false);
         
         // checks if shootingRay exists, if it's colliding with any object in the scene and if the value of "exposure time" of the ray is equal or lesser than the given value then the variable is set to TRUE.
         const test = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 100;
-        if(test){
-            console.log(test);
-        } else {console.log(false);}
+        if (test) {
+        // Access the mesh from the collider if it exists
+        if (shootingRay.collider.entity) {
+            const collidedMesh = shootingRay.collider.entity.getComponent('mesh');
+            if (collidedMesh) {
+                console.log(collidedMesh); // This will log the collided mesh
+            } else {
+                console.log("Mesh component not found on collided entity");
+            }
+        } else {
+            console.log("Collider entity not found on collided object");
+        }
+        } else {
+            console.log("is not colliding");
+        }
 
     // JUMPING
         
