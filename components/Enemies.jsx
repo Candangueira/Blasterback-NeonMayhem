@@ -39,15 +39,15 @@ export function Enemies() {
                 // console.log(newEnemyPosition);
                 // spawning enemies, setting the hooks.
                 // set enemies takes the previous state of the enemies and add new ones.
-                
+                const newEnemyId = enemyId++;
+                console.log(newEnemyId);
                 addEnemyToArray(
-                    <Enemy key={enemyId} enemyPosition={newEnemyPosition} health={100}/>
+                    <Enemy key={newEnemyId} enemyPosition={newEnemyPosition} health={100}/>
                 );
-                enemyId++;
             }, 5000);
             return () => clearInterval(idSpawnEnemies);
         }
-
+      
         const setIntervalId = setTimeout(spawnEnemy, SPAWN_TIME); // Initial call to spawnEnemy
 
         return () => clearInterval(setIntervalId); //  ensures that any pending intervals are canceled when the component is unmounted.

@@ -138,21 +138,19 @@ const [shootingRay, setShootingRay] = useState(false);
         const test = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 100;
 
         if (test) {
+           
         // Access the mesh from the collider if it exists
         if (shootingRay.collider.entity) {
             const collidedMesh = shootingRay.collider.entity.getComponent('Enemy');
             if (collidedMesh) {
-                console.log(collidedMesh); // collided mesh
-            } else {
-                console.log("Mesh component not found on collided entity");
-            }
-        } else {
-            console.log("Collider entity not found on collided object");
+                const collidedEnemyId = collidedMesh.props.enemyId;
+                console.log(collidedEnemyId); // collided mesh
         }
-        } else {
-            console.log("is not colliding");
+        else {
+            console.log("no entity");
         }
-
+    }
+}
     // JUMPING
         
         // the raycasting creates a ray in the y axis and checks if the ray is intersecting any object in the scene. Used to detect collision in the next line. 
