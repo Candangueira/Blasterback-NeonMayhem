@@ -4,11 +4,20 @@ import spawnSpots from '../src/spawnSpots.json';
 import { useState, useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { usePlayerPositionStore } from './Player';
-// import { update } from "@tweenjs/tween.js"
+import { create } from "zustand"
+
+// stores the enemy state.
+export const EnemiesStore = create((set) => ({
+    enemies: [],
+    setEnemies: (newEnemies) => set({ enemies: newEnemies }),
+
+    enemyHealth: 100,
+    setEnemyHealth: (newHealth) => set({ enemyHealth: newHealth }),
+}));
 
 export function Enemies() {
     const [enemies, setEnemies] = useState([]);
-    const [enemyHealth, setEnemyHealth] = useState(100);
+    // const [enemyHealth, setEnemyHealth] = useState(100);
     const SPAWN_TIME = 5000;
     let enemyId = 0;
     let enemyArray = [];
@@ -27,12 +36,12 @@ export function Enemies() {
             const idSpawnEnemies = setInterval(() => {
             const newEnemyPosition =
                     spawnSpots[getRandomInt(0, spawnSpots.length - 1)];
-                console.log(newEnemyPosition);
+                // console.log(newEnemyPosition);
                 // spawning enemies, setting the hooks.
                 // set enemies takes the previous state of the enemies and add new ones.
                 
                 addEnemyToArray(
-                    <Enemy key={enemyId} enemyPosition={newEnemyPosition}/>
+                    <Enemy key={enemyId} enemyPosition={newEnemyPosition} health={100}/>
                 );
                 enemyId++;
             }, 5000);
@@ -93,26 +102,13 @@ function Enemy(props) {
             y: velocityEnemy.y,
             z: velocity.z,
         });
-        console.log(velocityEnemy);
+        
     }
 
-    //STILL WORKING ON IT.
-    function bulletDamage() {
-        // if(enemyMesh.intersectObjects(enemyMesh)) {
-        //   console.log("collision");
-        //   }
-    }
-    // // Update the mutable reference whenever props.playerPosition changes.
-
-    // useEffect(() => {
-    //     const animationId = requestAnimationFrame(moveEnemy);
-
-    //     return () => cancelAnimationFrame(animationId);
-    // }, []);
 
     useFrame(() => {
         moveEnemy();
-        bulletDamage();
+    
     });
     // -----------------------------------------------------------
 
@@ -120,7 +116,7 @@ function Enemy(props) {
     return (
         <>
         <group position={props.enemyPosition}>
-            <RigidBody ref={enemyRef}>
+            <RigidBody ref={enemyRef} >
                 <primitive object={enemyMesh} />
             </RigidBody>
         </group>

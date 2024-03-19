@@ -117,12 +117,19 @@ const [shootingRay, setShootingRay] = useState(false);
         // Get the first object the raycaster hits
         setShootingRay(world.castRay(new RAPIER.Ray(playerRef.current.translation(), cameraDirection)));
         
+        // Perform the raycast
+        const intersects = raycaster.intersectObjects(true);
+        console.log(Enemies.enemyArray);
+
         // checks if shootingRay exists, if it's colliding with any object in the scene and if the value of "exposure time" of the ray is equal or lesser than the given value then the variable is set to TRUE.
         const test = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 100;
+
+
+
         if (test) {
         // Access the mesh from the collider if it exists
         if (shootingRay.collider.entity) {
-            const collidedMesh = shootingRay.collider.entity.getComponent('mesh');
+            const collidedMesh = shootingRay.collider.entity.getComponent('Enemy');
             if (collidedMesh) {
                 console.log(collidedMesh); // This will log the collided mesh
             } else {
@@ -332,14 +339,13 @@ const [shootingRay, setShootingRay] = useState(false);
                 <Weapon position={[0.3, -0.1, 0.3]} scale={0.3}/>
             </group>
         </group>
-
-        
-            <RigidBody colliders={false} mass={1} ref={cubeRigidBodyRef}>
-                <mesh position={[10, 1, 0]}>
+  
+            {/* <RigidBody colliders={false} mass={1} ref={cubeRigidBodyRef}>
+                <mesh >
                     <capsuleGeometry args={[5, 5]} />
                     <CapsuleCollider args={[5, 5]} />
                 </mesh>
-            </RigidBody>
+            </RigidBody> */}
         
         
         </>

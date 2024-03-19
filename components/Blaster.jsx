@@ -72,7 +72,7 @@ export function Weapon(props) {
     function startShooting() {
         if(!recoilAnimation) return;
         // calls the gunshot sound
-        gunShotSound();
+        // gunShotSound(); //  TURN ON FOR GUNSHOT SOUND
         recoilAnimation.start();
         flashAnimation.start();
 
