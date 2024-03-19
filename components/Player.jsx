@@ -13,8 +13,6 @@ import { Cubes } from "../components/Cube.jsx"
 
 const raycaster = new THREE.Raycaster();
 const MOVE_SPEED = 10;
-// const SHOOT_BUTTON = parseInt(import.meta.env.VITE_SHOOT_BUTTON);
-// const AIM_BUTTON = parseInt(import.meta.env.VITE_AIM_BUTTON);
 const direction = new THREE.Vector3();
 const frontVector = new THREE.Vector3();
 const sideVector = new THREE.Vector3();
@@ -22,15 +20,27 @@ const rotation = new THREE.Vector3();
 const cameraDirection = new THREE.Vector3();
 const easing = TWEEN.Easing.Quadratic.Out;
 
+// Player Position Store
 export const usePlayerPositionStore = create((set) => ({
     playerTargetPosition: {x:0, y:0, z:0},
     setIsPlayerTargetPosition: (value) => set(() => ({ playerTargetPosition: value }))
 }));
 
+// Player Health Store
+export const useHealthPlayerStore = create((set) => ({
+    playerHealth: 1000,
+    setPlayerHealth: (value) => set(() => ({ playerHealth: value }))
+}));
+
+// Player Points
+export const usePointsPlayerStore = create((set) => ({
+    playerPoints: 0,
+    setPlayerPoints: (value) => set(() => ({ playerPoints: value }))
+}));
+
+
 export function Player() {
-// !!!!!!!!!!!! DELETE THIS !!!!!!!!!!!!!!!!!
-    // const playerTargetPosition = usePlayerPositionStore((state) => state.playerTargetPosition);
-    // console.log(playerTargetPosition);
+
 // ------------------------------------------------
     // create a link for the player object. This will allow direct interaction with the player object in the scene.
     const playerRef = useRef();
@@ -45,14 +55,20 @@ export function Player() {
 
     // create a link for the weapon and the player object.
     const objectHandRef = useRef();
-    //
+
+// PLAYER POSITION STORE
     const setIsPlayerTargetPosition = usePlayerPositionStore((state) => state.setIsPlayerTargetPosition);
 
-    // console.log(setIsPlayerTargetPosition);
-    //
+// HEALTH STORE
+    const setPlayerHealth = useHealthPlayerStore((state) => state.setPlayerHealth);
+
+// POINTS STORE
+    const setPlayerPoints = usePointsPlayerStore((state) => state.setPlayerPoints);
+
     const swayingObjectRef = useRef();
-    
-// console.log(playerPosition);
+
+
+
 // setting up animation states.
 // RUNNING
     const [swayingAnimation, setSwayingAnimation] = useState(null);
@@ -114,24 +130,19 @@ const [shootingRay, setShootingRay] = useState(false);
         // Set the raycaster to start at the player's position and shoot in the direction the camera is facing
         raycaster.set(playerRef.current.translation(), cameraDirection);
 
-        // Get the first object the raycaster hits
+        // Set the shootingRay to the first object the ray hits
         setShootingRay(world.castRay(new RAPIER.Ray(playerRef.current.translation(), cameraDirection)));
-        
-        // Perform the raycast
-        const intersects = raycaster.intersectObjects(true);
-        console.log(Enemies.enemyArray);
+
 
         // checks if shootingRay exists, if it's colliding with any object in the scene and if the value of "exposure time" of the ray is equal or lesser than the given value then the variable is set to TRUE.
         const test = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 100;
-
-
 
         if (test) {
         // Access the mesh from the collider if it exists
         if (shootingRay.collider.entity) {
             const collidedMesh = shootingRay.collider.entity.getComponent('Enemy');
             if (collidedMesh) {
-                console.log(collidedMesh); // This will log the collided mesh
+                console.log(collidedMesh); // collided mesh
             } else {
                 console.log("Mesh component not found on collided entity");
             }
