@@ -10,9 +10,12 @@ import { useAimingStore, Weapon } from "./Blaster.jsx"
 import { Enemies } from "./Enemies.jsx"
 import { create } from "zustand"
 import { Cubes } from "../components/Cube.jsx"
+import { Bullet } from "./Bullet.jsx"
+import { v4 as uuidv4 } from 'uuid'
 
 const raycaster = new THREE.Raycaster();
 const MOVE_SPEED = 10;
+const BULLET_SPEED = 200;
 const direction = new THREE.Vector3();
 const frontVector = new THREE.Vector3();
 const sideVector = new THREE.Vector3();
@@ -87,18 +90,47 @@ export function Player() {
     const isAiming = useAimingStore((state) => state.isAiming);
 
 //  BULLET
-const [bulletHit, setBulletHit] = useState(false);
-const [shootingRay, setShootingRay] = useState(false);
-  
-    // provides access to rapier.
+const [bullets, setBullets] = useState([])
+//const [bulletHit, setBulletHit] = useState(false);
+//const [shootingRay, setShootingRay] = useState(false);
+const camera = useRef();
+
+// provides access to rapier.
     const rapier = useRapier();
     const world = rapier.world;
+
+function shoot(playerPosition, camera) {
+
+    const bulletId = uuidv4();
+
+    const bulletVelocity = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.current.quaternion).multiplyScalar(BULLET_SPEED);
+    
+    const newBullet = {
+                        id: bulletId,
+                        position: playerPosition,
+                        velocity: bulletVelocity,
+                        // onCollision = {() => console.log("Bullet collided with:" + rigidBodyObject.name)}
+                    };
+    console.log(newBullet);               
+    setBullets((bullets) => [...bullets, newBullet]);
+    };
+   
+   
+    // function onBulletCollisionDisapear(bullet, bullets) {
+    //     if(bullet.name !== "player") {
+    //         setBullets((bullets) => bullets.filter((b) => b.id !== bullets.id));
+    //     }
+    // };
+    
+    // console.log(bullets);
+
     // is called each frame, here the player position and linear velocity are updated.
     useFrame((state) => {
         // checks if the player exists. If not, will stop the function execution to avoid errors. 
         if(!playerRef.current) return;
         
-
+       camera.current = state.camera;
+        
         // get the current linear player velocity, to move the player.
         const velocity = playerRef.current.linvel();
 
@@ -112,10 +144,11 @@ const [shootingRay, setShootingRay] = useState(false);
         // - calculates the final vector subtracting the movement vectors, normalising the result.(So the vector length is always 1) and multiplying by the movement speed constant.
         // - applyEuler applies the rotation to a vector. In this case the camera rotation is applied to the direction vector. So the player moves in the direction of the rotation of the camera.
         direction.subVectors(frontVector, sideVector).normalize().multiplyScalar(MOVE_SPEED).applyEuler(state.camera.rotation);
-
+        //console.log(state.camera.rotation);
         // "Wakes up" the player object to make sure it reacts to changes. If you don't use this method, after some time the object will "sleep" and will not react to position changes.
+        
         playerRef.current.wakeUp();
-
+        
         // set the player's new linear velocity based on the calculated direction of movement and keep the current vertical velocity (so as not to affect jumps or falls).
         playerRef.current.setLinvel({ x: direction.x, y:velocity.y, z: direction.z});
         // updates the state of the player movement.
@@ -123,34 +156,7 @@ const [shootingRay, setShootingRay] = useState(false);
         // gets the target position reference to use in enemies( so they can follow it.)
         setIsPlayerTargetPosition(playerRef.current.translation());
     
-    // SHOOTING WITH RAYCASTING
-        // Get the direction the camera is facing
-        cameraDirection.applyEuler(state.camera.rotation);
-        state.camera.getWorldDirection(cameraDirection);
-        // Set the raycaster to start at the player's position and shoot in the direction the camera is facing
-        raycaster.set(playerRef.current.translation(), cameraDirection);
 
-        // Set the shootingRay to the first object the ray hits
-        setShootingRay(world.castRay(new RAPIER.Ray(playerRef.current.translation(), cameraDirection)));
-
-
-        // checks if shootingRay exists, if it's colliding with any object in the scene and if the value of "exposure time" of the ray is equal or lesser than the given value then the variable is set to TRUE.
-        const test = shootingRay && shootingRay.collider && Math.abs(shootingRay.toi) <= 100;
-
-        if (test) {
-           
-        // Access the mesh from the collider if it exists
-        if (shootingRay.collider.entity) {
-            const collidedMesh = shootingRay.collider.entity.getComponent('Enemy');
-            if (collidedMesh) {
-                const collidedEnemyId = collidedMesh.props.enemyId;
-                console.log(collidedEnemyId); // collided mesh
-        }
-        else {
-            console.log("no entity");
-        }
-    }
-}
     // JUMPING
         
         // the raycasting creates a ray in the y axis and checks if the ray is intersecting any object in the scene. Used to detect collision in the next line. 
@@ -181,12 +187,6 @@ const [shootingRay, setShootingRay] = useState(false);
 
         TWEEN.update();
     });
-
-// Shoot function.
-        function shootButtonHandler() {
-            // make the function check if the shootingRay is true or false.
-            // and which object is being hit by the ray.
-        }
 
 // sets jump function.
         function doJump() {
@@ -317,26 +317,47 @@ const [shootingRay, setShootingRay] = useState(false);
         }, [ isAiming, aimingAnimation, aimingBackAnimation ]);
 
          useEffect(() => {
+          
         // bullet shooting
         document.addEventListener("mousedown", (e) => {
             e.preventDefault();
-            shootButtonHandler(shootingRay);
-            // console.log(shootingRay)
+            shoot(playerRef.current.translation(), camera);
         });
 
         document.addEventListener("mouseup", (e) => {
             e.preventDefault();
-            shootButtonHandler();
-            // console.log("stop!")
         });
 
-    });
+    }, []);
    
 // ------------------------------------------------------------------------------------
 
     return (
         <>
-        <RigidBody colliders={false} mass={1} ref={playerRef} lockRotations>
+        {bullets.map((bullet) => {
+            return (
+                <Bullet
+                    name="bullet"
+                    mass={1}
+                    key={bullet.id}
+                    position={bullet.position}
+                    velocity={bullet.velocity}
+                    // onCollision={() => setBullets((bullets) => bullets.filter((b) => b.id !== bullet.id))}
+                    onCollision={ console.log("Bullet collided") }
+                    onContactForce={({ other }) => {
+                     console.log(other);
+                    const collidedWith = other.rigidBodyObject.name;
+                    if (collidedWith === "floor" || collidedWith === "enemy") {
+                    console.log("Bullet collided with", collidedWith);
+                    return;
+                    }
+                    
+                    onCollision();
+                }}
+                />
+            );
+        })}
+        <RigidBody colliders={false} mass={1} ref={playerRef} lockRotations name="player">
             <mesh castShadow>
                 {/* args={[ radius, height]} */}
                 <capsuleGeometry args={[0.5, 0.5]} />
@@ -347,15 +368,7 @@ const [shootingRay, setShootingRay] = useState(false);
             <group ref={swayingObjectRef}>
                 <Weapon position={[0.3, -0.1, 0.3]} scale={0.3}/>
             </group>
-        </group>
-  
-            {/* <RigidBody colliders={false} mass={1} ref={cubeRigidBodyRef}>
-                <mesh >
-                    <capsuleGeometry args={[5, 5]} />
-                    <CapsuleCollider args={[5, 5]} />
-                </mesh>
-            </RigidBody> */}
-        
+        </group>        
         
         </>
     );

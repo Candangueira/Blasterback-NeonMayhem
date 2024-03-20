@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { usePlayerPositionStore } from './Player';
 import { create } from "zustand"
+import { v4 as uuidv4 } from 'uuid'
 
 // stores the enemy state.
 export const EnemiesStore = create((set) => ({
@@ -19,7 +20,6 @@ export function Enemies() {
     const [enemies, setEnemies] = useState([]);
     // const [enemyHealth, setEnemyHealth] = useState(100);
     const SPAWN_TIME = 5000;
-    let enemyId = 0;
     let enemyArray = [];
 
     useEffect(() => {
@@ -39,11 +39,15 @@ export function Enemies() {
                 // console.log(newEnemyPosition);
                 // spawning enemies, setting the hooks.
                 // set enemies takes the previous state of the enemies and add new ones.
-                const newEnemyId = enemyId++;
-                console.log(newEnemyId);
-                addEnemyToArray(
-                    <Enemy key={newEnemyId} enemyPosition={newEnemyPosition} health={100}/>
-                );
+                const newEnemyId = uuidv4();
+
+                const enemy = {
+                    id: newEnemyId,
+                    position: newEnemyPosition,
+                    health: 100,
+                  };
+
+                addEnemyToArray(enemy);
             }, 5000);
             return () => clearInterval(idSpawnEnemies);
         }
@@ -53,7 +57,18 @@ export function Enemies() {
         return () => clearInterval(setIntervalId); //  ensures that any pending intervals are canceled when the component is unmounted.
     }, []);
 
-    return <>{enemies}</>;
+    return <>{enemies.map((enemy) => { 
+        return (
+        <Enemy
+                    key={enemy.id}
+                    enemyPosition={enemy.position}
+                    health={enemy.health}
+                    onCollision={() => {
+                      setEnemies((enemies) => enemies.filter((e) => e.id !== enemy.id));
+                    }}
+                  />
+        )
+    })}</>;
 }
 
 // get random function
@@ -116,7 +131,14 @@ function Enemy(props) {
     return (
         <>
         <group position={props.enemyPosition}>
-            <RigidBody ref={enemyRef} >
+            <RigidBody
+              ref={enemyRef}
+              name="enemy"
+              onContactForce={({ other }) => {
+                if (other.rigidBodyObject.name !== "bullet") return;
+                props.onCollision();
+              }}
+            >
                 <primitive object={enemyMesh} />
             </RigidBody>
         </group>
